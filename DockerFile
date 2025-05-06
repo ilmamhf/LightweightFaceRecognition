@@ -1,8 +1,6 @@
 # Use an official Python runtime as a parent image
 FROM python:3.10-slim
 
-ADD source dest
-
 # Install system dependencies including cmake and build-essential for compiling dlib
 RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake \
