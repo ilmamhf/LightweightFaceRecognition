@@ -1,21 +1,33 @@
-# Use an official Python runtime as a parent image
 FROM python:3.10-slim
 
-# Install system dependencies including cmake and build-essential for compiling dlib
+# Install system dependencies required by dlib and OpenCV
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    cmake \
-    build-essential \
+    libopenblas-base \
+    liblapack3 \
+    libglib2.0-0 \
+    libsm6 \
+    libxrender1 \
+    libxext6 \
     && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory to /app
+# Set workdir
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
+# Copy project files
 COPY . /app
 
-# Upgrade pip and install Python dependencies
+# Upgrade pip
 RUN pip install --no-cache-dir --upgrade pip
+
+# Install dlib via pre-built wheel
+RUN pip install --no-cache-dir \
+    https://github.com/RPi-Distro/python-dlib/releases/download/v19.24.0/dlib-19.24.0-cp310-cp310-manylinux_2_24_x86_64.whl
+
+# Install face_recognition via pip (akan menggunakan dlib yang sudah ada)
+RUN pip install --no-cache-dir face_recognition==1.3.0
+
+# Install other requirements
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Command to run your face-recognition API
+# Jalankan aplikasinya
 CMD ["python", "face-rec-api.py"]
