@@ -1,5 +1,5 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS  # Import CORS
+from flask import Flask, request, jsonify, send_from_directory, render_template_string
+from flask_cors import CORS
 import face_recognition
 import pickle
 import numpy as np
@@ -9,10 +9,10 @@ import io
 import os
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
 # Load known faces and embeddings once at startup
-model_path = "encodings.pickle"  # Update the path if needed
+model_path = "encodings.pickle"
 with open(model_path, "rb") as f:
     data = pickle.load(f)
 
@@ -20,13 +20,11 @@ with open(model_path, "rb") as f:
 THRESHOLD = 0.4
 
 def read_image_file(file_stream):
-    # Convert file stream to numpy array image (BGR)
     file_bytes = np.frombuffer(file_stream.read(), np.uint8)
     image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
     return image
 
 def read_image_base64(base64_str):
-    # Decode base64 string and convert to numpy image (BGR)
     img_data = base64.b64decode(base64_str)
     np_arr = np.frombuffer(img_data, np.uint8)
     image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
@@ -34,16 +32,11 @@ def read_image_base64(base64_str):
 
 @app.route("/recognize-face", methods=["POST"])
 def recognize_face():
-    """
-    Accepts an image file upload or base64 json, performs face recognition,
-    returns list of detected faces with bounding boxes, names, and similarity scores.
-    """
+
     if "image" in request.files:
-        # Image sent as a file part
         image_file = request.files["image"]
         image = read_image_file(image_file)
     else:
-        # Try to parse base64 json field 'image_base64'
         data_json = request.get_json()
         if data_json is None or "image_base64" not in data_json:
             return jsonify({"error": "No image file or base64 image provided"}), 400
@@ -78,6 +71,10 @@ def recognize_face():
             "bounding_box": {"top": top, "right": right, "bottom": bottom, "left": left}
         })
 
+        # Draw bounding box and name on the image
+        cv2.rectangle(image, (left, top), (right, bottom), (0, 255, 0), 2)
+        cv2.putText(image, name, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+
     response = {
         "num_faces": len(faces_output),
         "faces": faces_output
@@ -86,5 +83,4 @@ def recognize_face():
     return jsonify(response)
 
 if __name__ == "__main__":
-    # Run Flask app
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))

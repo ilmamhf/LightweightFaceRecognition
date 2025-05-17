@@ -31,11 +31,19 @@ def index():
     width: 100%;
     height: auto;
     background: black;
+    aspect-ratio: 4 / 3;
   }
 
   #video {
     -webkit-transform: scaleX(-1);
     transform: scaleX(-1);
+  }
+                                  
+  @media (max-width: 768px) {
+      #video {
+          width: 100%;
+          height: auto;
+      }
   }
 
   #log {
@@ -106,8 +114,9 @@ async function sendFrame() {
     formData.append("image", blob, "frame.jpg");
 
     try {
-        const apiUrl = `${window.location.protocol}//${window.location.hostname}:5000/recognize-face`;
-
+        // const apiUrl = `${window.location.protocol}//${window.location.hostname}:5000/recognize-face`;
+        // const apiUrl = `https://lightweightfacerecognition.onrender.com/recognize-face`;
+        const apiUrl = `https://lwfrdebug.onrender.com/recognize-face`;
         const response = await fetch(apiUrl, {
             method: "POST",
             body: formData
