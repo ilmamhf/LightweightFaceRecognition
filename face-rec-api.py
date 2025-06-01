@@ -79,6 +79,7 @@ def recognize_face():
         "num_faces": len(faces_output),
         "faces": faces_output
     }
+    print(f"[INFO] Response: {response}")
 
     return jsonify(response)
 
