@@ -1,3 +1,4 @@
 static/uploaded/last_uploaded.jpg
 dataset/
-.vscode/settings.json
+.vscode/
+temp dataset/
